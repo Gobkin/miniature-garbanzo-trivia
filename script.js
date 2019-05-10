@@ -2,7 +2,7 @@ $(function() {
   const url = "https://opentdb.com/api.php?amount=1&type=multiple";
   let options = [];
   let question = "";
-  let score = "";
+  let score = "10";
 
   // getting stuff
   play();
@@ -15,15 +15,18 @@ $(function() {
 
     // checking if the answer is correct so you can feel better about yourself.... or not
     if (result.correct){
+      // THIS ONE HERE HAS TO GET REFACTORED COZ IT LOOKS RETARDED
       alert("WINNER!");
       score++;
-      console.log(score);
+      $('.score').text(score);
+      $('li').remove();
       play();
 
     }else{
       alert("LOOSER!");
       score--;
-      console.log(score);
+      $('.score').text(score);
+      $('li').remove();  
       play();
     }
   });
@@ -59,7 +62,7 @@ $(function() {
     });
   }
 
-  // this one is function to populate data on the page
+  // this one is function to populate data on the page in the ul
   function populate(array, question){
     $('ul').append(`<li><span class="question">${question}</span>`);
     array.forEach(function(element){
