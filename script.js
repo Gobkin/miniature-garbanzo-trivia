@@ -2,9 +2,9 @@ $(function() {
   const url = "https://opentdb.com/api.php?amount=1&type=multiple";
   let options = [];
   let question = "";
-  let score = "10";
+  let lives = "10";
 
-  // getting stuff
+  // getting stuff for the initial round.
   play();
 
   // taking an answer and looking for  the corresponding object in the answer array
@@ -15,24 +15,20 @@ $(function() {
 
     // checking if the answer is correct so you can feel better about yourself.... or not
     if (result.correct){
-      // THIS ONE HERE HAS TO GET REFACTORED COZ IT LOOKS RETARDED
+      // if you win you gain life
       alert("WINNER!");
-      score++;
-      $('.score').text(score);
-      $('li').remove();
-      play();
-
+      lives++;
+      roundOver();
     }else{
+      // if you no win you loose life
       alert("LOOSER!");
-      score--;
-      $('.score').text(score);
-      $('li').remove();  
-      play();
+      lives--;
+      roundOver();
     }
   });
 
   // this one is fynction to get stuff from API
-  function play(){
+  play = () => {
     axios.get(url)
     .then(function(res){
       console.log(res);
@@ -47,7 +43,7 @@ $(function() {
       options.push({answer:he.decode(res.data.results[0].correct_answer), correct:true});
       
       // save the answers in the options array
-      res.data.results[0].incorrect_answers.forEach(function(element){
+      res.data.results[0].incorrect_answers.forEach((element)=>{
         options.push({answer:he.decode(element), correct:false});
       });
       
@@ -63,9 +59,9 @@ $(function() {
   }
 
   // this one is function to populate data on the page in the ul
-  function populate(array, question){
+  populate = (array, question)=>{
     $('ul').append(`<li><span class="question">${question}</span>`);
-    array.forEach(function(element){
+    array.forEach((element)=>{
       const answer = `<li>
           <span class="answer" id="${array.indexOf(element)}"></span> ${element.answer}
       </li>`;
@@ -74,8 +70,10 @@ $(function() {
   }
 
   // fucntion to scramble the array.
-  function shuffle(array) {
-    let currentIndex = array.length, temporaryValue, randomIndex;
+  shuffle = array => {
+    let currentIndex = array.length, 
+        temporaryValue, 
+        randomIndex;
 
     // While there remain elements to shuffle...
     while (0 !== currentIndex) {
@@ -92,3 +90,9 @@ $(function() {
     return array;
   }
 });
+
+roundOver = () => {
+  $('.score').text(score);
+      $('li').remove();
+      play();
+}
