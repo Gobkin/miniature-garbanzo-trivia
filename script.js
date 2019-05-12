@@ -1,37 +1,48 @@
 $(function() {
+  // variables be here
   const url = "https://opentdb.com/api.php?amount=1&type=multiple";
   let options = [];
   let question = "";
-  let lives = "10";
-
-  // getting stuff for the initial round.
-  play();
-
-  // taking an answer and looking for  the corresponding object in the answer array
-  $('ul').on('click', 'li', function(){
-    const bloko = $(this);
-    koko = (bloko.text().trim());
-    const result = options.find(option => option.answer === koko);
-
-    // checking if the answer is correct so you can feel better about yourself.... or not
-    if (result.correct){
-      // if you win you gain life
-      alert("WINNER!");
-      lives++;
-      roundOver();
-    }else{
-      // if you no win you loose life
-      alert("LOOSER!");
-      lives--;
-      roundOver();
+  // we start with ten lives - in later version this will increase the difficulty every time it reaches 15 or 20.
+  let score = "10";
+  
+  // this one is a function to update the score clear all the stupid words from the game and load up next question
+  const roundOver = () => {
+    if (score === 20){
+      console.log("you win have a cookie");
+    }else if(score === 0){
+      console.log('game over. Wah-wah');
     }
-  });
+    $('.score').text(score);
+        $('li').remove();
+        play();
+  }
+
+  // fucntion to scramble the array.
+  const shuffle = array => {
+    let currentIndex = array.length, 
+        temporaryValue, 
+        randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+    return array;
+  }
 
   // this one is fynction to get stuff from API
-  play = () => {
+  const play = () => {
     axios.get(url)
-    .then(function(res){
-      console.log(res);
+    .then(res =>{
 
       // clear the array just in case
       options = [];
@@ -53,14 +64,14 @@ $(function() {
       //sending stuff to list and such 
       populate(options, question);
     })
-    .catch(function(){
+    .catch(()=>{
       console.log("ERROR!");
     });
   }
 
   // this one is function to populate data on the page in the ul
-  populate = (array, question)=>{
-    $('ul').append(`<li><span class="question">${question}</span>`);
+  const populate = (array, question)=>{
+    $('.question').text(question);
     array.forEach((element)=>{
       const answer = `<li>
           <span class="answer" id="${array.indexOf(element)}"></span> ${element.answer}
@@ -69,30 +80,27 @@ $(function() {
     });
   }
 
-  // fucntion to scramble the array.
-  shuffle = array => {
-    let currentIndex = array.length, 
-        temporaryValue, 
-        randomIndex;
+  // getting stuff for the initial round.
+  play();
 
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
+  // taking an answer and looking for  the corresponding object in the answer array 
+  // THIS ONE HERE CANT USE ARROW FUNCTION BECUA IT MESSES UP the this keywoard, yay learning!
+  $('ul').on('click', 'li', function(){
+    const bloko = $(this);
+    koko = (bloko.text().trim());
+    const result = options.find(option => option.answer === koko);
 
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-
-      // And swap it with the current element.
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
+    // checking if the answer is correct so you can feel better about yourself.... or not
+    if (result.correct){
+      // if you win you gain life
+      alert("WINNER!");
+      score++;
+      roundOver();
+    }else{
+      // if you no win you loose life
+      alert("LOOSER!");
+      score--;
+      roundOver();
     }
-    return array;
-  }
+  });
 });
-
-roundOver = () => {
-  $('.score').text(score);
-      $('li').remove();
-      play();
-}
