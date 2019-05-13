@@ -1,21 +1,39 @@
 $(function() {
   // variables be here
   const url = "https://opentdb.com/api.php?amount=1&type=multiple";
-  let options = [];
-  let question = "";
+  let options,
+      category,
+      question;
   // we start with ten lives - in later version this will increase the difficulty every time it reaches 15 or 20.
-  let score = "10";
+  let score = 10;
+  let barWidth = 50;
   
-  // this one is a function to update the score clear all the stupid words from the game and load up next question
-  const roundOver = () => {
+
+  // DOES NOT WORK FOR SOME REASON IDK WHY!!!!!!!?!?!?!?!?!?!?!?!?!?!?!??!?
+  const sound = new Howl({
+    src: ['assets/audio/dirty.mp3'],
+    loop: true
+  });
+  
+  sound.play();
+
+  // this one checks if the game is over with epic win or epic fail
+
+  const gameOver = () => {
     if (score === 20){
       console.log("you win have a cookie");
     }else if(score === 0){
       console.log('game over. Wah-wah');
     }
+  }
+  
+  // this one is a function to update the score clear all the stupid words from the game and load up next question
+  
+  const roundOver = () => {
+    gameOver();
     $('.score').text(score);
-        $('li').remove();
-        play();
+    $('li').remove();
+    play();
   }
 
   // fucntion to scramble the array.
@@ -44,6 +62,7 @@ $(function() {
     axios.get(url)
     .then(res =>{
 
+      console.log(res);
       // clear the array just in case
       options = [];
       
@@ -57,6 +76,9 @@ $(function() {
       res.data.results[0].incorrect_answers.forEach((element)=>{
         options.push({answer:he.decode(element), correct:false});
       });
+
+      // save category to the category... duh
+      category = res.data.results[0].category;
       
       // shuffle the array
       options = shuffle(options);
@@ -72,10 +94,11 @@ $(function() {
   // this one is function to populate data on the page in the ul
   const populate = (array, question)=>{
     $('.question').text(question);
-    array.forEach((element)=>{
-      const answer = `<li>
+    $('.category').text(category);
+    array.forEach((element) => {
+      const answer = `<li><h3>
           <span class="answer" id="${array.indexOf(element)}"></span> ${element.answer}
-      </li>`;
+      </h3></li>`;
       $('ul').append(answer);
     });
   }
@@ -93,12 +116,16 @@ $(function() {
     // checking if the answer is correct so you can feel better about yourself.... or not
     if (result.correct){
       // if you win you gain life
-      alert("WINNER!");
+      barWidth = barWidth + 5;
+      $(".bar").css('width', barWidth + "%");
+      alert("Smart!!!");
       score++;
       roundOver();
     }else{
       // if you no win you loose life
-      alert("LOOSER!");
+      barWidth = barWidth - 5;
+      $(".bar").css('width', barWidth + "%");
+      alert("Dumb!!!");
       score--;
       roundOver();
     }
