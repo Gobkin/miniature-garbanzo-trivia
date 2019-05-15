@@ -6,16 +6,27 @@ $(function() {
       question;
   // we start with ten lives - in later version this will increase the difficulty every time it reaches 15 or 20.
   let score = 10;
+  // the healthbar starts at 50% and fluctuates from 0 to 100
   let barWidth = 50;
   
-
-  // DOES NOT WORK FOR SOME REASON IDK WHY!!!!!!!?!?!?!?!?!?!?!?!?!?!?!??!?
-  const sound = new Howl({
-    src: ['assets/audio/dirty.mp3'],
-    loop: true
+  // save sou ds for howler into a variables.
+    // thos one for the background music
+  // const sound = new Howl({
+  //   src: ['assets/audio/dirty.mp3'],
+  //   loop: true,
+  //   volume: 0.5
+  // });
+// this ome is for the winning sound
+  const winSound = new Howl({
+    src: ['assets/audio/bubbles.mp3']
   });
-  
-  sound.play();
+// this one is for the loosing sound
+  const lostSound = new Howl({
+    src: ['assets/audio/dotted-spiral.mp3']
+  });
+
+  // // play bacground music... maybe
+  // sound.play();
 
   // this one checks if the game is over with epic win or epic fail
 
@@ -31,9 +42,9 @@ $(function() {
   
   const roundOver = () => {
     gameOver();
-    $('.score').text(score);
     $('li').remove();
     play();
+    $('ul').on('click', 'li', clicker);
   }
 
   // fucntion to scramble the array.
@@ -61,8 +72,6 @@ $(function() {
   const play = () => {
     axios.get(url)
     .then(res =>{
-
-      console.log(res);
       // clear the array just in case
       options = [];
       
@@ -85,6 +94,8 @@ $(function() {
 
       //sending stuff to list and such 
       populate(options, question);
+
+      $('.content').toggleClass('invisible visible');
     })
     .catch(()=>{
       console.log("ERROR!");
@@ -96,38 +107,67 @@ $(function() {
     $('.question').text(question);
     $('.category').text(category);
     array.forEach((element) => {
-      const answer = `<li><h3>
-          <span class="answer" id="${array.indexOf(element)}"></span> ${element.answer}
+      const answer = `<li class="answer"><h3>
+         ${element.answer}
       </h3></li>`;
       $('ul').append(answer);
     });
   }
 
-  // getting stuff for the initial round.
-  play();
-
   // taking an answer and looking for  the corresponding object in the answer array 
   // THIS ONE HERE CANT USE ARROW FUNCTION BECUA IT MESSES UP the this keywoard, yay learning!
-  $('ul').on('click', 'li', function(){
+  // also playing win and lose sounds and changing colors and turning off event listener for the duration of sound 
+  // also need to be refactored coz looks retarded
+  const clicker = function(){
     const bloko = $(this);
     koko = (bloko.text().trim());
     const result = options.find(option => option.answer === koko);
-
     // checking if the answer is correct so you can feel better about yourself.... or not
     if (result.correct){
-      // if you win you gain life
+      // play cheerful winning music sound
+      winSound.play();
+      // change color of the answer to the friendly green
+      $(this).css('color', '#6c3');
+      // prevent changing colors to cute blue so user would know it is time for reflection
+      $(".answer").removeClass('answer');
+      // if you win the health bar goes up
       barWidth = barWidth + 5;
       $(".bar").css('width', barWidth + "%");
-      alert("Smart!!!");
+      // the score that keeps track of winning game goes up
       score++;
-      roundOver();
+      // remove event listener from all the buttons coz silly user will keep clicking
+      $('ul').off('click', 'li', clicker);
+      // wait a little bit while proud silly user rejoices in victory
+      setTimeout(function(){
+        $('.content').toggleClass('invisible visible');
+          setTimeout(function(){
+           roundOver();
+          }, 1500);
+      },500)
     }else{
-      // if you no win you loose life
+      // play slightly less cheerful music
+      lostSound.play();
+      // change the answer into mildy annoying pinkish-red
+      $(this).css('color', '#c54');
+      // prevent changing colors to cute blue so user would know it is time for reflection
+      $(".answer").removeClass('answer');
+      // healthbar goes down 
       barWidth = barWidth - 5;
       $(".bar").css('width', barWidth + "%");
-      alert("Dumb!!!");
+      // score that keeps track of victory goes down
       score--;
-      roundOver();
+      // wait a little while sad user conteplated life choices that led to this moment
+      $('ul').off('click', 'li', clicker);
+      setTimeout(function(){
+        $('.content').toggleClass('invisible visible');
+          setTimeout(function(){
+           roundOver();
+          }, 1500);
+      },500)
     }
-  });
+  }
+
+  // getting stuff for the initial round.
+  play();
+  $('ul').on('click', 'li', clicker);
 });

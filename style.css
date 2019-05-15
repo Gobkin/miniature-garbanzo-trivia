@@ -52,8 +52,8 @@ html {
     transform:translate(-50%, -50%);
   }
 
-  li:hover{
-      color:red;
+  .answer:hover{
+      color:#09f;
   }
 
   .health-bar {
@@ -88,6 +88,11 @@ html {
     position: relative;
   }
 
+  .change-size{
+    transition: width .5s linear;
+    transition: height .5s linear;
+  }
+
   hr {
     border: 0;
     height: 1px;
@@ -101,4 +106,14 @@ html {
     100% {
       transform:translateX(25%);
     }
+  }
+
+  .invisible{
+    transition: opacity 1s ease-out;
+    opacity: 0;
+  }
+
+  .visible  {
+    opacity: 1;
+    transition: opacity 1s;
   }
