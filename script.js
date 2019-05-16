@@ -5,17 +5,12 @@ $(function() {
       category,
       question;
   // we start with ten lives - in later version this will increase the difficulty every time it reaches 15 or 20.
-  let score = 10;
+  let score = 5;
   // the healthbar starts at 50% and fluctuates from 0 to 100
   let barWidth = 50;
   
-  // save sou ds for howler into a variables.
-    // thos one for the background music
-  // const sound = new Howl({
-  //   src: ['assets/audio/dirty.mp3'],
-  //   loop: true,
-  //   volume: 0.5
-  // });
+// save sounds for howler into a variables.
+  
 // this ome is for the winning sound
   const winSound = new Howl({
     src: ['assets/audio/bubbles.mp3']
@@ -25,16 +20,16 @@ $(function() {
     src: ['assets/audio/dotted-spiral.mp3']
   });
 
-  // // play bacground music... maybe
-  // sound.play();
-
   // this one checks if the game is over with epic win or epic fail
 
   const gameOver = () => {
-    if (score === 20){
+    if (score === 10){
       console.log("you win have a cookie");
+      $('.content').empty().text('Victory!');
+
     }else if(score === 0){
       console.log('game over. Wah-wah');
+      $('.content').empty().text('Defeat!');
     }
   }
   
@@ -68,7 +63,7 @@ $(function() {
     return array;
   }
 
-  // this one is fynction to get stuff from API
+  // this one is function to get stuff from API
   const play = () => {
     axios.get(url)
     .then(res =>{
@@ -114,10 +109,19 @@ $(function() {
     });
   }
 
+  // animations, timeout and end of turn sequence.
+  const endSequence = () => {
+    setTimeout(function(){
+      $('.content').toggleClass('invisible visible');
+        setTimeout(function(){
+         roundOver();
+        }, 1500);
+    },500);
+  }
+
   // taking an answer and looking for  the corresponding object in the answer array 
   // THIS ONE HERE CANT USE ARROW FUNCTION BECUA IT MESSES UP the this keywoard, yay learning!
   // also playing win and lose sounds and changing colors and turning off event listener for the duration of sound 
-  // also need to be refactored coz looks retarded
   const clicker = function(){
     const bloko = $(this);
     koko = (bloko.text().trim());
@@ -131,19 +135,14 @@ $(function() {
       // prevent changing colors to cute blue so user would know it is time for reflection
       $(".answer").removeClass('answer');
       // if you win the health bar goes up
-      barWidth = barWidth + 5;
+      barWidth = barWidth + 10;
       $(".bar").css('width', barWidth + "%");
       // the score that keeps track of winning game goes up
       score++;
       // remove event listener from all the buttons coz silly user will keep clicking
       $('ul').off('click', 'li', clicker);
       // wait a little bit while proud silly user rejoices in victory
-      setTimeout(function(){
-        $('.content').toggleClass('invisible visible');
-          setTimeout(function(){
-           roundOver();
-          }, 1500);
-      },500)
+      endSequence();
     }else{
       // play slightly less cheerful music
       lostSound.play();
@@ -152,18 +151,13 @@ $(function() {
       // prevent changing colors to cute blue so user would know it is time for reflection
       $(".answer").removeClass('answer');
       // healthbar goes down 
-      barWidth = barWidth - 5;
+      barWidth = barWidth - 10;
       $(".bar").css('width', barWidth + "%");
       // score that keeps track of victory goes down
       score--;
       // wait a little while sad user conteplated life choices that led to this moment
       $('ul').off('click', 'li', clicker);
-      setTimeout(function(){
-        $('.content').toggleClass('invisible visible');
-          setTimeout(function(){
-           roundOver();
-          }, 1500);
-      },500)
+      endSequence();
     }
   }
 
