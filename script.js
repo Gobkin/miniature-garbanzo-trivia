@@ -6,16 +6,16 @@ $(function() {
       question;
   // we start with ten lives - in later version this will increase the difficulty every time it reaches 15 or 20.
   let score = 5;
+
   // the healthbar starts at 50% and fluctuates from 0 to 100
   let barWidth = 50;
   
 // save sounds for howler into a variables.
-  
-// this ome is for the winning sound
+// this ome is for the OMG winning sound
   const winSound = new Howl({
     src: ['assets/audio/bubbles.mp3']
   });
-// this one is for the loosing sound
+// this one is for the OMG loosing sound
   const lostSound = new Howl({
     src: ['assets/audio/dotted-spiral.mp3']
   });
@@ -69,20 +69,20 @@ $(function() {
     .then(res =>{
       // clear the array just in case
       options = [];
-      
+      const data = res.data.results[0];
       // decode and save question into the variable
-      question = he.decode(res.data.results[0].question);
+      question = he.decode(data.question);
       
       // decode and save the correct answer in the array
-      options.push({answer:he.decode(res.data.results[0].correct_answer), correct:true});
+      options.push({answer:he.decode(data.correct_answer), correct:true});
       
       // save the answers in the options array
-      res.data.results[0].incorrect_answers.forEach((element)=>{
+      data.incorrect_answers.forEach((element)=>{
         options.push({answer:he.decode(element), correct:false});
       });
 
       // save category to the category... duh
-      category = res.data.results[0].category;
+      category = data.category;
       
       // shuffle the array
       options = shuffle(options);
@@ -92,6 +92,7 @@ $(function() {
 
       $('.content').toggleClass('invisible visible');
     })
+    // in case something goes wrong 
     .catch(()=>{
       console.log("ERROR!");
     });
@@ -118,9 +119,12 @@ $(function() {
         }, 1500);
     },500);
   }
+  const reflection = () =>{
+    $(".answer").removeClass('answer');
+  }
 
   // taking an answer and looking for  the corresponding object in the answer array 
-  // THIS ONE HERE CANT USE ARROW FUNCTION BECUA IT MESSES UP the this keywoard, yay learning!
+  // THIS ONE HERE CANT USE ARROW FUNCTION BECAUSE IT MESSES UP the this keywoard, yay learning!
   // also playing win and lose sounds and changing colors and turning off event listener for the duration of sound 
   const clicker = function(){
     const bloko = $(this);
@@ -131,9 +135,9 @@ $(function() {
       // play cheerful winning music sound
       winSound.play();
       // change color of the answer to the friendly green
-      $(this).css('color', '#6c3');
+      bloko.css('color', '#6c3');
       // prevent changing colors to cute blue so user would know it is time for reflection
-      $(".answer").removeClass('answer');
+      reflection();
       // if you win the health bar goes up
       barWidth = barWidth + 10;
       $(".bar").css('width', barWidth + "%");
@@ -141,15 +145,15 @@ $(function() {
       score++;
       // remove event listener from all the buttons coz silly user will keep clicking
       $('ul').off('click', 'li', clicker);
-      // wait a little bit while proud silly user rejoices in victory
+      // wait a little bit while proud user rejoices in victory
       endSequence();
     }else{
       // play slightly less cheerful music
       lostSound.play();
       // change the answer into mildy annoying pinkish-red
-      $(this).css('color', '#c54');
+      bloko.css('color', '#c54');
       // prevent changing colors to cute blue so user would know it is time for reflection
-      $(".answer").removeClass('answer');
+      reflection();
       // healthbar goes down 
       barWidth = barWidth - 10;
       $(".bar").css('width', barWidth + "%");
